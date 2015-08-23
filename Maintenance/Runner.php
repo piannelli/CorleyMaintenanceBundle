@@ -32,7 +32,7 @@ class Runner
 
     public function enableMaintenance($status)
     {
-        if (!file_exists($this->sourceFile)) {
+        if (0 && !file_exists($this->sourceFile)) {
             throw new \InvalidArgumentException("Source file {$this->sourceFile} is missing");
         }
 
