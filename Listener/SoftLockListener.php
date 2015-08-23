@@ -13,7 +13,7 @@ class SoftLockListener
     private $whitePaths;
     private $whiteIps;
 
-    public function __construct($maintenancePage, $maintenanceLock, array $whitePaths, array $whiteIps)
+    public function __construct($maintenancePage, $maintenanceLock, array $whitePaths, array $whiteIps, \Twig_Environment $twig)
     {
         $this->maintenancePage = $maintenancePage;
         $this->lock = file_exists($maintenanceLock);
@@ -25,6 +25,7 @@ class SoftLockListener
 
         $this->whitePaths = array_replace(array("/^\/_/"), $whitePaths);
         $this->whiteIps = array_replace(array(), $whiteIps);
+        $this->twig = $twig;
     }
 
     public function setRequestStack($requestStack)
@@ -37,8 +38,12 @@ class SoftLockListener
         if ($this->isUnderMaintenance()) {
             $response = new Response();
             $response->setStatusCode(503);
-            $response->setContent(file_get_contents($this->maintenancePage));
-
+            if (false !== strpos($this->maintenancePage, '.html.twig')) {
+                $response->setContent($this->twig->render($this->maintenancePage));
+            } else {
+                $response->setContent(file_get_contents($this->maintenancePage));
+            }
+            
             $event->setResponse($response);
             $event->stopPropagation();
         }
